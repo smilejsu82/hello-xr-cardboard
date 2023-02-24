@@ -57,6 +57,7 @@ public class GazeManager : MonoBehaviour
 
     public void CancelGazeSelection()
     {
+        Debug.Log("CancelGazeSelection");
         gazeBarCanvas.SetActive(false);
         runTimer = false;
         timeProggres = 0;
