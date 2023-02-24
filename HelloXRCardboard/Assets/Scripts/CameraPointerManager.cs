@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CameraPointerManager : MonoBehaviour
 {
+    public static CameraPointerManager instance;
+
     [SerializeField] private GameObject pointer;
     [SerializeField] private float maxDistancePointer = 4.5f;
 
@@ -17,6 +19,17 @@ public class CameraPointerManager : MonoBehaviour
     private readonly string interactableTag = "Interactable";
     private float scaleSize = 0.025f;
 
+    [HideInInspector]
+    public Vector3 hitPoint;
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+            Destroy(this.gameObject);
+        else
+            instance = this;
+    }
+
     private void Start()
     { 
         GazeManager.Instance.OnGazeSelection += GazeSelection;
@@ -24,7 +37,7 @@ public class CameraPointerManager : MonoBehaviour
 
     private void GazeSelection()
     {
-        _gazedAtObject?.SendMessage("OnPointerClick", null, SendMessageOptions.DontRequireReceiver);
+        _gazedAtObject?.SendMessage("OnPointerClickXR", null, SendMessageOptions.DontRequireReceiver);
 
     }
 
@@ -37,11 +50,13 @@ public class CameraPointerManager : MonoBehaviour
 
         if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance))
         {
+            this.hitPoint = hit.point;
+
             if (_gazedAtObject != hit.transform.gameObject)
             {
-                _gazedAtObject?.SendMessage("OnPointerExit",null,SendMessageOptions.DontRequireReceiver);
+                _gazedAtObject?.SendMessage("OnPointerExitXR", null,SendMessageOptions.DontRequireReceiver);
                 _gazedAtObject = hit.transform.gameObject;
-                _gazedAtObject.SendMessage("OnPointerEnter", null, SendMessageOptions.DontRequireReceiver);
+                _gazedAtObject.SendMessage("OnPointerEnterXR", null, SendMessageOptions.DontRequireReceiver);
                 GazeManager.Instance.StartGazeSelection();
             }
             if (hit.transform.CompareTag(interactableTag))
@@ -55,13 +70,13 @@ public class CameraPointerManager : MonoBehaviour
         }
         else
         {
-            _gazedAtObject?.SendMessage("OnPointerExit", null, SendMessageOptions.DontRequireReceiver);
+            _gazedAtObject?.SendMessage("OnPointerExitXR", null, SendMessageOptions.DontRequireReceiver);
             _gazedAtObject = null;
         }
 
         if (Google.XR.Cardboard.Api.IsTriggerPressed)
         {
-            _gazedAtObject?.SendMessage("OnPointerClick", null, SendMessageOptions.DontRequireReceiver);
+            _gazedAtObject?.SendMessage("OnPointerClickXR", null, SendMessageOptions.DontRequireReceiver);
         }
     }
 
